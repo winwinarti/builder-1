@@ -1,0 +1,11 @@
+#!/bin/bash
+
+curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=Uploading ROM if exist at $(date)&chat_id=${tg_id}&parse_mode=html"
+
+time rclone copy /tmp/rom/out/target/product/X01BD/xdroid*.zip ramadhannangga:X01BD -P
+
+basename /tmp/out/target/product/X01BD/xdroid*.zip
+
+dlink=$(basename /tmp/out/target/product/X01BD/xdroid*.zip)
+
+curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=Download ROM Link https://ramadhannangga.irisprjkt.workers.dev/X01BD/${dlink}&chat_id=${tg_id}&parse_mode=html"
