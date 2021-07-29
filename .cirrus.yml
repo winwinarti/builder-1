@@ -6,7 +6,7 @@ env:
     tg_id: "ENCRYPTED[e562662ba14aaa631d770f14f73b72eae16a7ea0bc6b99f45588d99066948cc4a19a0e0ab613c004aebf42f4b6ef5f17]"
 
 task:
-    name: xdroid-CAF
+    name: rom
     timeout_in: 120m
     container:
       image: inok2341/anu:latest
