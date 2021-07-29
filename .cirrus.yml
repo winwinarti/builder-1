@@ -1,0 +1,54 @@
+env:
+    CIRRUS_CLONE_DEPTH: 1
+    CIRRUS_WORKING_DIR: "/tmp/ci"
+    rclone_config: "ENCRYPTED[378df0ed96be4398b1e9c5ed1c0d3118d9c99d1e27e7ded1f90b1275acab52f378a7d1b9a4708e5fc7eb3494d352ac9a]"
+    bot_api: "ENCRYPTED[09a737cbd0af4aa20439c43943da002ad0ea73a56b58cbe885a1af57e3b800f529c38636f4da7f0a3039349431214ed6]"
+    tg_id: "ENCRYPTED[5011f24adad06fdac54e58cf2f8466db1b7c4536937de5d9cd4d7aa472358fa736bcd2293cf127e6ce8f250aa79c8eab]"
+
+task:
+    name: xdroid-CAF
+    timeout_in: 120m
+    container:
+      image: inok2341/builder:latest
+      cpu: 8
+      memory: 32G      
+
+    rclone_setup_script:
+      - mkdir -p ~/.config/rclone
+      - echo "$rclone_config" > ~/.config/rclone/rclone.conf
+    download_ccache_background_script:
+      - curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=Download ccache at $(date)&chat_id=${tg_id}&parse_mode=html"
+      - df -h && free -h && nproc && cat /etc/os* && env
+      - rclone copy ramadhannangga:xdroid-CAF/ccache.tar.gz /tmp -P
+      - cd /tmp
+      - time tar xf ccache.tar.gz
+      - rm -rf ccache.tar.gz
+    sync_script:
+      - curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=Sync ROM at $(date)&chat_id=${tg_id}&parse_mode=html"
+      - git config --global  user.name "ramadhannangga"
+      - git config --global  user.email "ramadhananggayudhanto@gmail.com"
+      - export KBUILD_BUILD_USER=ramadhannangga
+      - export KBUILD_BUILD_HOST=irisprjkt
+      - mkdir -p /tmp/rom # Where to sync source
+      - cd /tmp/rom
+      - repo init -q --no-repo-verify --depth=1 -u https://github.com/xdroid-CAF/xd_manifest -b eleven -g default,-device,-mips,-darwin,-notdefault
+      - repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j8
+      - git clone --depth=1 https://github.com/ramadhannangga/kernel_asus_sdm660 --single-branch -b master kernel/asus/sdm660
+      - git clone --depth=1 https://github.com/ramadhannangga/vendor_asus --single-branch vendor/asus
+      - git clone --depth=1 https://github.com/ramadhannangga/device_asus_sdm660-common --single-branch device/asus/sdm660-common
+      - git clone --depth=1 https://github.com/ramadhannangga/device_asus_X01BD --single-branch device/asus/X01BD
+    monitor_background_script:
+      - ./monitor
+    build_script:
+      - curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=Build ROM at $(date)&chat_id=${tg_id}&parse_mode=html"
+      - ./build
+      - time rclone copy /tmp/rom/out/error.log ramadhannangga: -P
+    upload_rom_script:
+      - ./uprom
+    compress_ccache_script:    
+      - ./tarccache
+    upload_ccache_script:
+      - cd /tmp
+      - curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=Uploading ccache at $(date)&chat_id=${tg_id}&parse_mode=html"
+      - time rclone copy ccache.tar.gz ramadhannangga:xdroid-CAF -P 
+      - curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=Upload ccache done at $(date)&chat_id=${tg_id}&parse_mode=html"
