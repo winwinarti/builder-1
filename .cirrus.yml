@@ -9,10 +9,12 @@ task:
     name: xdroid-CAF
     timeout_in: 120m
     container:
-      dockerfile: Dockerfile
+      image:xyzuan/xdocker:latest
       cpu: 8
       memory: 32G      
 
+    dockerfile_script:
+      - ./Dockerfile
     rclone_setup_script:
       - mkdir -p ~/.config/rclone
       - echo "$rclone_config" > ~/.config/rclone/rclone.conf
