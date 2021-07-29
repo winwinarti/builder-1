@@ -11,9 +11,9 @@ ccache -M 20G
 ccache -o compression=true
 ccache -z
 
-#make xd -j8 &
-#sleep 80m
-#kill %1
+make xd -j8 &
+sleep 80m
+kill %1
 ccache -s
 
-make xd -j8
+#make xd -j8
