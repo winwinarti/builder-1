@@ -9,7 +9,7 @@ task:
     name: xdroid-CAF
     timeout_in: 120m
     container:
-      image: dopaemon/bionic:latest
+      dockerfile: Dockerfile
       cpu: 8
       memory: 32G      
 
